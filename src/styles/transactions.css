@@ -1,0 +1,21 @@
+.transactions-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.counterparty-name {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-text,
+.remark-text {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
