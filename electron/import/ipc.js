@@ -121,7 +121,8 @@ export function registerImportIpc() {
       };
     }
     
-    const ocrText = await runPaddleOcr(filePath);
+    const ocrResult = await runPaddleOcr(filePath);
+    const ocrText = ocrResult.text || '';
     const fields = parseInvoiceFields(ocrText);
     const category = detectInvoiceCategory(ocrText, fields);
     
@@ -129,9 +130,40 @@ export function registerImportIpc() {
     const fileType = ext.slice(1);
     const fileSize = fileStat.size;
     
+    const isOcrFailed = !ocrResult.success;
+    const isOcrIncomplete = fields.confidence < 30;
+    const isMissingKeyFields = !fields.total_amount || fields.total_amount <= 0 || !fields.invoice_date;
+    
     let status = 'pending';
-    if (fields.confidence < 30) {
+    let anomalyType = null;
+    let anomalyDescription = null;
+    let anomalyDetail = null;
+    let anomalySeverity = 'warning';
+    
+    if (isOcrFailed) {
       status = 'anomaly';
+      anomalyType = 'ocr_failed';
+      anomalySeverity = 'error';
+      anomalyDescription = 'OCR识别失败';
+      anomalyDetail = ocrResult.error || 'OCR服务不可用或识别失败，请人工录入票据信息';
+      if (ocrResult.usedMock) {
+        anomalyDetail += '（当前使用演示数据占位，非正式识别结果）';
+      }
+    } else if (isMissingKeyFields) {
+      status = 'anomaly';
+      anomalyType = 'incomplete_ocr';
+      anomalySeverity = 'error';
+      anomalyDescription = 'OCR结果缺少关键字段';
+      const missingFields = [];
+      if (!fields.total_amount || fields.total_amount <= 0) missingFields.push('金额');
+      if (!fields.invoice_date) missingFields.push('开票日期');
+      anomalyDetail = `缺少关键字段：${missingFields.join('、')}，识别置信度：${fields.confidence}%，请人工核对并补全信息`;
+    } else if (isOcrIncomplete) {
+      status = 'anomaly';
+      anomalyType = 'incomplete_ocr';
+      anomalySeverity = 'warning';
+      anomalyDescription = 'OCR识别结果置信度较低';
+      anomalyDetail = `识别置信度：${fields.confidence}%，建议人工核对关键信息`;
     }
     
     const stmt = db.prepare(`
@@ -152,16 +184,16 @@ export function registerImportIpc() {
     
     const invoiceId = result.lastInsertRowid;
     
-    if (status === 'anomaly') {
+    if (anomalyType) {
       db.prepare(`
         INSERT INTO anomalies (type, severity, invoice_id, description, detail)
         VALUES (?, ?, ?, ?, ?)
       `).run(
-        'incomplete_ocr',
-        'warning',
+        anomalyType,
+        anomalySeverity,
         invoiceId,
-        'OCR识别结果不完整',
-        `识别置信度：${fields.confidence}%，请人工核对关键信息`
+        anomalyDescription,
+        anomalyDetail
       );
     }
     
@@ -169,10 +201,15 @@ export function registerImportIpc() {
       filePath,
       success: true,
       duplicate: false,
+      ocrFailed: isOcrFailed,
+      ocrEngineAvailable: ocrResult.ocrEngineAvailable,
+      usedMock: ocrResult.usedMock,
       invoiceId,
       fields,
       category,
       confidence: fields.confidence,
+      status,
+      anomaly: anomalyType ? { type: anomalyType, severity: anomalySeverity } : null,
     };
   }
 

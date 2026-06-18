@@ -41,10 +41,16 @@ export async function runPaddleOcr(imagePath) {
   const available = await checkPaddleOcr();
   
   if (!available) {
-    return generateMockOcrResult(imagePath);
+    return {
+      success: false,
+      ocrEngineAvailable: false,
+      usedMock: true,
+      text: generateMockOcrResult(imagePath),
+      error: 'PaddleOCR 未安装，使用演示数据',
+    };
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const python = process.platform === 'win32' ? 'python' : 'python3';
     const scriptPath = path.join(__dirname, 'paddle_ocr.py');
     
@@ -65,21 +71,50 @@ export async function runPaddleOcr(imagePath) {
       if (code === 0) {
         try {
           const result = JSON.parse(output.trim());
-          if (result.success) {
-            resolve(result.text);
+          if (result.success && result.text && result.text.trim().length > 0) {
+            resolve({
+              success: true,
+              ocrEngineAvailable: true,
+              usedMock: false,
+              text: result.text,
+            });
           } else {
-            resolve(generateMockOcrResult(imagePath));
+            resolve({
+              success: false,
+              ocrEngineAvailable: true,
+              usedMock: true,
+              text: generateMockOcrResult(imagePath),
+              error: result.error || 'OCR 识别结果为空',
+            });
           }
         } catch (e) {
-          resolve(generateMockOcrResult(imagePath));
+          resolve({
+            success: false,
+            ocrEngineAvailable: true,
+            usedMock: true,
+            text: generateMockOcrResult(imagePath),
+            error: 'OCR 结果解析失败：' + e.message,
+          });
         }
       } else {
-        resolve(generateMockOcrResult(imagePath));
+        resolve({
+          success: false,
+          ocrEngineAvailable: true,
+          usedMock: true,
+          text: generateMockOcrResult(imagePath),
+          error: 'OCR 进程执行失败，退出码：' + code + (error ? '，' + error : ''),
+        });
       }
     });
     
     process.on('error', (err) => {
-      resolve(generateMockOcrResult(imagePath));
+      resolve({
+        success: false,
+        ocrEngineAvailable: true,
+        usedMock: true,
+        text: generateMockOcrResult(imagePath),
+        error: 'OCR 进程启动失败：' + err.message,
+      });
     });
   });
 }

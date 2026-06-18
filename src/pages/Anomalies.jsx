@@ -68,6 +68,7 @@ function Anomalies({ onUpdate }) {
 
   const getTypeInfo = (type) => {
     const typeMap = {
+      'ocr_failed': { label: 'OCR识别失败', icon: '❌', color: 'error' },
       'duplicate_invoice': { label: '重复票据', icon: '📋', color: 'warning' },
       'incomplete_ocr': { label: 'OCR识别不完整', icon: '🔍', color: 'warning' },
       'amount_mismatch': { label: '金额不匹配', icon: '💰', color: 'error' },
@@ -139,6 +140,7 @@ function Anomalies({ onUpdate }) {
             onChange={(e) => handleFilterChange('type', e.target.value)}
           >
             <option value="">全部类型</option>
+            <option value="ocr_failed">OCR识别失败</option>
             <option value="duplicate_invoice">重复票据</option>
             <option value="incomplete_ocr">OCR识别不完整</option>
             <option value="amount_mismatch">金额不匹配</option>

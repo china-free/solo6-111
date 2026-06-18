@@ -114,6 +114,16 @@ function InvoiceDetail({ invoice, onClose, onUpdate }) {
             </div>
           </div>
 
+          {detail.status === 'anomaly' && (
+            <div className="ocr-warning">
+              <div className="warning-icon">⚠️</div>
+              <div className="warning-content">
+                <div className="warning-title">OCR识别异常</div>
+                <div className="warning-text">该票据的 OCR 识别存在问题，关键字段可能不准确，请人工核对或编辑修正票据信息后再进行匹配。</div>
+              </div>
+            </div>
+          )}
+
           <div className="detail-tabs">
             <button className="tab-btn active">基本信息</button>
             <button className="tab-btn">匹配记录 ({matches.length})</button>

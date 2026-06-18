@@ -227,6 +227,7 @@ export function registerExportIpc() {
 
   function getAnomalyTypeText(type) {
     const typeMap = {
+      'ocr_failed': 'OCR识别失败',
       'duplicate_invoice': '重复票据',
       'incomplete_ocr': 'OCR识别不完整',
       'amount_mismatch': '金额不匹配',

@@ -7,29 +7,47 @@ import { runPaddleOcr } from '../ocr/paddleOcr.js';
 
 async function recognizeSingleFile(filePath) {
   if (!fs.existsSync(filePath)) {
-    throw new Error('文件不存在');
+    return {
+      success: false,
+      error: '文件不存在',
+    };
   }
   
   const ext = path.extname(filePath).toLowerCase();
   
-  if (['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.pdf'].includes(ext)) {
-    const text = await runPaddleOcr(filePath);
-    const fields = parseInvoiceFields(text);
-    
-    const fileBuffer = fs.readFileSync(filePath);
-    const fileHash = crypto.createHash('md5').update(fileBuffer).digest('hex');
-    
+  if (!['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.pdf'].includes(ext)) {
     return {
-      success: true,
-      text,
-      fields,
-      fileHash,
+      success: false,
+      error: '不支持的文件格式',
     };
   }
   
+  const ocrResult = await runPaddleOcr(filePath);
+  
+  if (!ocrResult.success) {
+    return {
+      success: false,
+      ocrFailed: true,
+      ocrEngineAvailable: ocrResult.ocrEngineAvailable,
+      usedMock: ocrResult.usedMock,
+      error: ocrResult.error || 'OCR 识别失败',
+    };
+  }
+  
+  const text = ocrResult.text;
+  const fields = parseInvoiceFields(text);
+  
+  const fileBuffer = fs.readFileSync(filePath);
+  const fileHash = crypto.createHash('md5').update(fileBuffer).digest('hex');
+  
   return {
-    success: false,
-    error: '不支持的文件格式',
+    success: true,
+    ocrFailed: false,
+    ocrEngineAvailable: ocrResult.ocrEngineAvailable,
+    usedMock: false,
+    text,
+    fields,
+    fileHash,
   };
 }
 

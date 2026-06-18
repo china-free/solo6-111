@@ -2,6 +2,34 @@
   width: 720px;
 }
 
+.ocr-warning {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #fbbf24;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+}
+
+.ocr-warning .warning-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.ocr-warning .warning-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 4px;
+}
+
+.ocr-warning .warning-text {
+  font-size: 13px;
+  color: #78350f;
+  line-height: 1.5;
+}
+
 .detail-header {
   display: flex;
   justify-content: space-between;
