@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/anomalies.css';
+import { getAnomalyTypeInfo, getSeverityInfo } from '../constants/index.js';
 
 function Anomalies({ onUpdate }) {
   const [anomalies, setAnomalies] = useState([]);
@@ -64,28 +65,6 @@ function Anomalies({ onUpdate }) {
     } catch (e) {
       console.error('处理异常失败:', e);
     }
-  };
-
-  const getTypeInfo = (type) => {
-    const typeMap = {
-      'ocr_failed': { label: 'OCR识别失败', icon: '❌', color: 'error' },
-      'duplicate_invoice': { label: '重复票据', icon: '📋', color: 'warning' },
-      'incomplete_ocr': { label: 'OCR识别不完整', icon: '🔍', color: 'warning' },
-      'amount_mismatch': { label: '金额不匹配', icon: '💰', color: 'error' },
-      'duplicate_amount': { label: '同金额多笔流水', icon: '💳', color: 'warning' },
-      'split_payment': { label: '拆分报销', icon: '📊', color: 'info' },
-      'over_payment': { label: '超额匹配', icon: '⚠️', color: 'error' },
-    };
-    return typeMap[type] || { label: type, icon: '❓', color: 'info' };
-  };
-
-  const getSeverityInfo = (severity) => {
-    const severityMap = {
-      'error': { label: '严重', class: 'severity-error' },
-      'warning': { label: '警告', class: 'severity-warning' },
-      'info': { label: '提示', class: 'severity-info' },
-    };
-    return severityMap[severity] || { label: severity, class: 'severity-info' };
   };
 
   const totalPages = Math.ceil(pagination.total / pagination.pageSize);
@@ -175,7 +154,7 @@ function Anomalies({ onUpdate }) {
           ) : (
             <div className="anomaly-list">
               {anomalies.map((anomaly) => {
-                const typeInfo = getTypeInfo(anomaly.type);
+                const typeInfo = getAnomalyTypeInfo(anomaly.type);
                 const severityInfo = getSeverityInfo(anomaly.severity);
                 
                 return (

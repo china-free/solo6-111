@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TransactionDetail from '../components/TransactionDetail.jsx';
 import '../styles/transactions.css';
+import { getStatusLabel } from '../constants/index.js';
 
 function Transactions({ onUpdate }) {
   const [transactions, setTransactions] = useState([]);
@@ -102,16 +103,6 @@ function Transactions({ onUpdate }) {
 
   const handlePageChange = (newPage) => {
     setPagination(prev => ({ ...prev, page: newPage }));
-  };
-
-  const getStatusText = (status) => {
-    const map = {
-      pending: '待匹配',
-      matched: '已匹配',
-      partial: '部分匹配',
-      anomaly: '异常',
-    };
-    return map[status] || status;
   };
 
   const totalPages = Math.ceil(pagination.total / pagination.pageSize);
@@ -231,7 +222,7 @@ function Transactions({ onUpdate }) {
                     </td>
                     <td>
                       <span className={`status-badge ${t.status}`}>
-                        {getStatusText(t.status)}
+                        {getStatusLabel(t.status)}
                       </span>
                     </td>
                     <td onClick={(e) => e.stopPropagation()}>

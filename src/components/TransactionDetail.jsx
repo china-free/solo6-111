@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/transaction-detail.css';
+import { getStatusLabel } from '../constants/index.js';
 
 function TransactionDetail({ transaction, onClose, onUpdate }) {
   const [detail, setDetail] = useState(transaction);
@@ -76,16 +77,6 @@ function TransactionDetail({ transaction, onClose, onUpdate }) {
     }
   };
 
-  const getStatusText = (status) => {
-    const map = {
-      pending: '待匹配',
-      matched: '已匹配',
-      partial: '部分匹配',
-      anomaly: '异常',
-    };
-    return map[status] || status;
-  };
-
   const matchedAmount = matches.reduce((sum, m) => sum + (m.matched_amount || 0), 0);
 
   return (
@@ -108,7 +99,7 @@ function TransactionDetail({ transaction, onClose, onUpdate }) {
             </div>
             <div className="status-section">
               <span className={`status-badge ${detail.status}`}>
-                {getStatusText(detail.status)}
+                {getStatusLabel(detail.status)}
               </span>
             </div>
           </div>

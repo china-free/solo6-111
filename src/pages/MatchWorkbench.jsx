@@ -118,16 +118,6 @@ function MatchWorkbench({ onUpdate }) {
     }
   };
 
-  const getStatusText = (status) => {
-    const map = {
-      pending: '待匹配',
-      matched: '已匹配',
-      partial: '部分匹配',
-      anomaly: '异常',
-    };
-    return map[status] || status;
-  };
-
   const getScoreLevel = (score) => {
     if (score >= 70) return { text: '高', class: 'high' };
     if (score >= 50) return { text: '中', class: 'medium' };
